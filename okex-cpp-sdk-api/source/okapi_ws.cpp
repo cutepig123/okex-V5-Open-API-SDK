@@ -62,17 +62,17 @@ void okapi_ws::RequestWithoutLogin(std::string url, std::string channels, std:: 
                       *fileStream = outFile;
 
                       // Create http_client to send the request.
-                      uri wsuri(url);
+                      uri wsuri(s2w(url));
                       client.connect(wsuri).wait();
                       printf("connect success: %s\n", url.c_str());
 
                       json::value obj;
-                      obj["op"] = json::value::string(op);
-                      obj["args"] = json::value::string(channels);
+                      obj[L"op"] = json::value::string(s2w(op));
+                      obj[L"args"] = json::value::string(s2w(channels));
                       websocket_outgoing_message msg;
-                      msg.set_utf8_message(obj.serialize());
+                      msg.set_utf8_message(w2s(obj.serialize()));
                       client.send(msg).wait();
-                      printf("send success: %s\n", obj.serialize().c_str());
+                      printf("send success: %s\n", w2s(obj.serialize()).c_str());
 
                       return client.receive().get();
                   })
@@ -92,7 +92,7 @@ void okapi_ws::RequestWithoutLogin(std::string url, std::string channels, std:: 
                           if (msg.message_type() == websocket_message_type::binary_message) {
                               gzDecompress((Byte *) buf, buflen, (Byte *) data, &datalen);
                           } else {
-                              strcpy((char *) data, (char *) buf);
+                              strcpy_s((char *) data, datalen, (char *) buf);
                           }
 
                           printf("receive success: \n");
@@ -149,7 +149,7 @@ void okapi_ws::Request(std::string url, std::string channels, std::string op, st
     auto getTime = [](char *timestamp){
         time_t t;
         time(&t);
-        sprintf(timestamp, "%ld", t);
+        sprintf_s(timestamp, 10, "%ld", t);
     };
 
     char timestamp[32];
@@ -157,13 +157,13 @@ void okapi_ws::Request(std::string url, std::string channels, std::string op, st
     std::string sign = GetSign(secret_key, timestamp, "GET", "/users/self/verify", "");
 
     auto getLoginObj = [=](json::value &obj){
-        obj["op"] = json::value::string("login");
+        obj[L"op"] = json::value::string(U("login"));
         std::vector<json::value> array;
-        array.push_back(json::value::string(api_key));
-        array.push_back(json::value::string(passphrase));
-        array.push_back(json::value::string(timestamp));
-        array.push_back(json::value::string(sign));
-        obj["args"] = json::value::array(array);
+        array.push_back(json::value::string(s2w(api_key)));
+        array.push_back(json::value::string(s2w(passphrase)));
+        array.push_back(json::value::string(s2w(timestamp)));
+        array.push_back(json::value::string(s2w(sign)));
+        obj[L"args"] = json::value::array(array);
     };
 
     json::value obj;
@@ -177,13 +177,13 @@ void okapi_ws::Request(std::string url, std::string channels, std::string op, st
                   {
                       *fileStream = outFile;
                       // Create http_client to send the request.
-                      uri wsuri(url);
+                      uri wsuri(s2w(url));
                       client.connect(wsuri).wait();
                       printf("connect success: %s\n", url.c_str());
                       websocket_outgoing_message msg;
-                      msg.set_utf8_message(obj.serialize());
+                      msg.set_utf8_message(w2s(obj.serialize()));
                       client.send(msg).wait();
-                      printf("send success: %s\n", obj.serialize().c_str());
+                      printf("send success: %s\n", w2s(obj.serialize()).c_str());
                       return client.receive().get();
                   })
 
@@ -200,7 +200,7 @@ void okapi_ws::Request(std::string url, std::string channels, std::string op, st
                       if (msg.message_type() == websocket_message_type::binary_message) {
                           gzDecompress((Byte *) buf, buflen, (Byte *) data, &datalen);
                       } else {
-                          strcpy((char *)data, (char *)buf);
+                          strcpy_s((char *)data, datalen, (char *)buf);
                       }
 
                       printf("receive success: \n");
@@ -216,7 +216,7 @@ void okapi_ws::Request(std::string url, std::string channels, std::string op, st
                   {
                       json::value value;
                       value = json::value::parse(datastr);
-                      json::value b = value.at("success");
+                      json::value b = value.at(L"success");
                       if (b == json::value::boolean(true)) {
                           printf("login success \n");
                       } else {
@@ -225,11 +225,11 @@ void okapi_ws::Request(std::string url, std::string channels, std::string op, st
 
                       json::value obj;
                       websocket_outgoing_message sendmsg;
-                      obj["op"] = json::value::string(op);
-                      obj["args"] = json::value::string(channels);
-                      sendmsg.set_utf8_message(obj.serialize());
+                      obj[L"op"] = json::value::string(s2w(op));
+                      obj[L"args"] = json::value::string(s2w(channels));
+                      sendmsg.set_utf8_message(w2s(obj.serialize()));
                       client.send(sendmsg).wait();
-                      printf("send success: %s\n", obj.serialize().c_str());
+                      printf("send success: %s\n", w2s(obj.serialize()).c_str());
                       return client.receive().get();
                   })
             .then([&](websocket_incoming_message msg)
@@ -246,7 +246,7 @@ void okapi_ws::Request(std::string url, std::string channels, std::string op, st
                           if (msg.message_type() == websocket_message_type::binary_message) {
                               gzDecompress((Byte *) buf, buflen, (Byte *) data, &datalen);
                           } else {
-                              strcpy((char *) data, (char *) buf);
+                              strcpy_s((char *) data, datalen, (char *) buf);
                           }
                           printf("receive success: \n");
                           printf("\t data: %s\n", data);

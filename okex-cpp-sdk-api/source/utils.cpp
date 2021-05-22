@@ -17,8 +17,9 @@ using namespace websocketpp;
 char * GetTimestamp(char *timestamp, int len) {
     time_t t;
     time(&t);
-    struct tm* ptm = gmtime(&t);
-    strftime(timestamp,len,"%FT%T.123Z", ptm);
+    struct tm tm;
+    gmtime_s(&tm, &t);
+    strftime(timestamp,len,"%FT%T.123Z", &tm);
     return timestamp;
 }
 
@@ -101,10 +102,10 @@ void IterateJSONValue()
 {
     // Create a JSON object.
     json::value obj;
-    obj["key1"] = json::value::boolean(false);
-    obj["key2"] = json::value::number(44);
-    obj["key3"] = json::value::number(43.6);
-    obj["key4"] = json::value::string(U("str"));
+    obj[L"key1"] = json::value::boolean(false);
+    obj[L"key2"] = json::value::number(44);
+    obj[L"key3"] = json::value::number(43.6);
+    obj[L"key4"] = json::value::string(U("str"));
 
 
     // Loop over each element in the object.
@@ -120,7 +121,7 @@ void IterateJSONValue()
         const auto &v = iter->second;
 
         // Perform actions here to process each string and value in the JSON object...
-        std::cout << "String: " << str.c_str() << ", Value: " << v.serialize() << endl;
+        std::cout << "String: " << str.c_str() << ", Value: " << w2s(v.serialize()) << endl;
     }
 
     /* Output:

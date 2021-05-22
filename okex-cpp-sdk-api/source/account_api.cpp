@@ -1,14 +1,15 @@
 #include "okapi.h"
+#include "utils.h"
 
 static string AccountPathPrefix = "/api/account/v3/";
 
 string OKAPI::DoTransfer(value &jsonObj) {
-    string params = jsonObj.serialize();
+    string params = w2s(jsonObj.serialize());
     return Request(POST, AccountPathPrefix+"transfer",params);
 }
 
 string OKAPI::WithDrawals(value &jsonObj) {
-    string params = jsonObj.serialize();
+    string params = w2s(jsonObj.serialize());
     return Request(POST, AccountPathPrefix+"withdrawal",params);
 }
 
