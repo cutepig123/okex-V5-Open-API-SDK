@@ -32,7 +32,7 @@ if __name__ == '__main__':
 # 资金账户API
     accountAPI = account.AccountAPI(api_key, secret_key, passphrase, False)
     # 资金账户信息
-    result = accountAPI.get_wallet()
+    result = accountAPI.balance()
     # 单一币种账户信息
     # result = accountAPI.get_currency('')
     # 资金划转

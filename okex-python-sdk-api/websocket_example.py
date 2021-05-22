@@ -38,7 +38,8 @@ def login_params(timestamp, api_key, passphrase, secret_key):
     d = mac.digest()
     sign = base64.b64encode(d)
 
-    login_param = {"op": "login", "args": [api_key, passphrase, timestamp, sign.decode("utf-8")]}
+    login_param = {"op": "login", "args": [
+        {'apiKey':api_key, 'passphrase':passphrase, 'timestamp':timestamp, 'sign':sign.decode("utf-8")}]}
     login_str = json.dumps(login_param)
     return login_str
 
@@ -185,7 +186,7 @@ def change(num_old):
 async def subscribe_without_login(url, channels):
     l = []
     while True:
-        try:
+        if 1:
             async with websockets.connect(url) as ws:
                 sub_param = {"op": "subscribe", "args": channels}
                 sub_str = json.dumps(sub_param)
@@ -209,7 +210,8 @@ async def subscribe_without_login(url, channels):
                             break
 
                     timestamp = get_timestamp()
-                    res = inflate(res_b).decode('utf-8')
+                    #res = inflate(res_b).decode('utf-8')
+                    res = (res_b)
                     print(timestamp + res)
 
                     res = eval(res)
@@ -279,26 +281,23 @@ async def subscribe_without_login(url, channels):
                                                 await ws.send(sub_str)
                                                 timestamp = get_timestamp()
                                                 print(timestamp + f"send: {sub_str}")
-        except Exception as e:
-            timestamp = get_timestamp()
-            print(timestamp + "连接断开，正在重连……")
-            print(e)
-            continue
+        
 
 
 # subscribe channels need login
 async def subscribe(url, api_key, passphrase, secret_key, channels):
     while True:
-        try:
+        if 1:
             async with websockets.connect(url) as ws:
                 # login
                 timestamp = str(server_timestamp())
                 login_str = login_params(timestamp, api_key, passphrase, secret_key)
                 await ws.send(login_str)
-                # time = get_timestamp()
-                # print(time + f"send: {login_str}")
+                time = get_timestamp()
+                print(time + f"send: {login_str}")
                 res_b = await ws.recv()
-                res = inflate(res_b).decode('utf-8')
+                #res = inflate(res_b).decode('utf-8')
+                res = (res_b)
                 time = get_timestamp()
                 print(time + res)
 
@@ -327,14 +326,11 @@ async def subscribe(url, api_key, passphrase, secret_key, channels):
                             break
 
                     time = get_timestamp()
-                    res = inflate(res_b).decode('utf-8')
-                    print(time + res)
+                    res = (res_b)
+                    parsed_json = json.loads(res_b)
+                    print(time + json.dumps(parsed_json, indent=4, sort_keys=True))
 
-        except Exception as e:
-            time = get_timestamp()
-            print(time + "连接断开，正在重连……")
-            print(e)
-            continue
+
 
 
 # unsubscribe channels
@@ -379,16 +375,17 @@ async def unsubscribe_without_login(url, channels, timestamp):
         print(timestamp + f"recv: {res}")
 
 
-api_key = ""
-secret_key = ""
-passphrase = ""
+apikey = "2ed10735-6d2f-4c88-931b-92f3be283000" 
+secretkey = "060F3BB777FEC79D130C3AF014DEA00C" 
+api_key = apikey
+secret_key = secretkey
+passphrase = "hejinshou123"
 
-url = 'wss://real.okex.com:8443/ws/v3'
-# url = 'wss://real.okex.com:8443/ws/v3?brokerId=9999'
+url = 'wss://wspap.okex.com:8443/ws/v5/public?brokerId=9999'
 
 # 现货
 # 用户币币账户频道
-# channels = ["spot/account:USDT"]
+channels = [{"channel":"instruments", "instType": "FUTURES"}]
 # 用户杠杆账户频道
 # channels = ["spot/margin_account:BTC-USDT"]
 # 用户委托策略频道
@@ -502,9 +499,11 @@ url = 'wss://real.okex.com:8443/ws/v3'
 loop = asyncio.get_event_loop()
 
 # 公共数据 不需要登录（行情，K线，交易数据，资金费率，限价范围，深度数据，标记价格等频道）
-loop.run_until_complete(subscribe_without_login(url, channels))
+#loop.run_until_complete(subscribe_without_login(url, channels))
 
 # 个人数据 需要登录（用户账户，用户交易，用户持仓等频道）
-# loop.run_until_complete(subscribe(url, api_key, passphrase, secret_key, channels))
+channels = [{"channel":"account"}]
+url = 'wss://wspap.okex.com:8443/ws/v5/private?brokerId=9999'
+loop.run_until_complete(subscribe(url, api_key, passphrase, secret_key, channels))
 
 loop.close()

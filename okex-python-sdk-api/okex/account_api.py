@@ -15,6 +15,9 @@ class AccountAPI(Client):
     def get_wallet(self):
         return self._request_without_params(GET, WALLET_INFO)
 
+    def balance(self):
+        return self._request_without_params(GET, '/api/v5/account/balance')
+
     # get specific currency info
     def get_currency(self, currency):
         return self._request_without_params(GET, CURRENCY_INFO + str(currency))
