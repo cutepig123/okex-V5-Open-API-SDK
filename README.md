@@ -1,4 +1,4 @@
-OKEx Open API V3 SDK
+OKEx Open API V5 SDK
 
 ### API Support 
 
