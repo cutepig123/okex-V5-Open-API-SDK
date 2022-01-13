@@ -13,7 +13,7 @@
 	const wss = new V3WebsocketClient();
 
 测试Demo：
-https://github.com/zisuting/okex-node-sdk-sample
+https://github.com/cutepig123/okex-V5-Open-API-SDK/okex-node-sdk-api
 
 ### API指南
 **WebSocket**行情订阅和推送，交易推送API，对应的源码文件是
